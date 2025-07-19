@@ -1,8 +1,10 @@
 using StarterAssets;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+    [SerializeField] GameObject hitVFXPrefab;
     [SerializeField] Animator animator;
     [SerializeField] ParticleSystem muzzleflash;
     [SerializeField] int damageAmount = 1;
@@ -26,20 +28,15 @@ public class Weapon : MonoBehaviour
 
         muzzleflash.Play();
         animator.Play(SHOOT_STRING, 0, 0f);
+        starterAssetsInputs.ShootInput(false);
         
         RaycastHit hit;
 
         if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, Mathf.Infinity))
         {
+            Instantiate(hitVFXPrefab, hit.point, quaternion.identity);
             EnemyHealth enemyHealth = hit.collider.GetComponent<EnemyHealth>();
             enemyHealth?.TakeDamage(damageAmount);
-
-            // if (enemyHealth)
-            // {
-            //     enemyHealth.TakeDamage(damageAmount);  => enemyHealth?.TakeDamage(damageAmount);랑 동일한 로직
-            // }
-
-            starterAssetsInputs.ShootInput(false);
         }
 
         
