@@ -9,6 +9,8 @@ public class ActiveWeapon : MonoBehaviour
     StarterAssetsInputs starterAssetsInputs;
     Weapon currentWeapon;
 
+    float timeSinceLastShoot = 0f;
+
     const string SHOOT_STRING = "Shoot";
 
     void Awake()
@@ -16,7 +18,7 @@ public class ActiveWeapon : MonoBehaviour
         starterAssetsInputs = GetComponentInParent<StarterAssetsInputs>();
         animator = GetComponent<Animator>();
     }
-    
+
     void Start()
     {
         currentWeapon = GetComponentInChildren<Weapon>();
@@ -25,14 +27,53 @@ public class ActiveWeapon : MonoBehaviour
     void Update()
     {
         HandleShoot();
+        HandleZoom();
+    }
+
+    public void SwitchWeapon(WeaponSO weaponSO)
+    {
+        if (currentWeapon)
+        {
+            Destroy(currentWeapon.gameObject);
+        }
+
+        Weapon newWeapon = Instantiate(weaponSO.weaponPrefab, transform).GetComponent<Weapon>();
+        currentWeapon = newWeapon;
+        this.weaponSO = weaponSO;
     }
 
     void HandleShoot()
     {
+        
+        timeSinceLastShoot += Time.deltaTime;
+        
         if (!starterAssetsInputs.shoot) return;
 
-        currentWeapon.Shoot(weaponSO);
-        animator.Play(SHOOT_STRING, 0, 0f);
-        starterAssetsInputs.ShootInput(false);
+        if (timeSinceLastShoot >= weaponSO.FireRate)
+        {
+            currentWeapon.Shoot(weaponSO);
+            animator.Play(SHOOT_STRING, 0, 0f);
+            timeSinceLastShoot = 0f;
+        }
+
+
+        if (!weaponSO.IsAutomatic)
+        {
+            starterAssetsInputs.ShootInput(false);
+        }
+    }
+
+    void HandleZoom()
+    {
+        if (!weaponSO.CanZoom) return;
+
+        if (starterAssetsInputs.zoom)
+        {
+            Debug.Log("Zooming in");
+        }
+        else
+        {
+            Debug.Log("Not Zooming in");
+        }
     }
 }
